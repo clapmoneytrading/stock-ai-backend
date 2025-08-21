@@ -1,0 +1,11 @@
+{
+  "name": "stock-ai-backend",
+  "version": "1.0.0",
+  "description": "Secure proxy for AI stock analysis API",
+  "main": "api/get-analysis.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "author": "",
+  "license": "ISC"
+}
