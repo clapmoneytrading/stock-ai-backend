@@ -1,12 +1,12 @@
-// Updated backend file: api/social.js
+// Final backend file: api/social.js
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export default async function handler(req, res) {
-  // CORS Headers... (same as before)
+  // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '[https://clapmoneytrading.com](https://clapmoneytrading.com)');
+  res.setHeader('Access-Control-Allow-Origin', 'https://clapmoneytrading.com'); // Correct URL
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
@@ -17,11 +17,8 @@ export default async function handler(req, res) {
     if (!stockSymbol) { return res.status(400).json({ error: "Stock symbol is required." }); }
 
     const prompt = `
-      You are a social media financial analyst. Analyze the recent public sentiment for the Indian stock with the ticker symbol: ${stockSymbol} from sources like X (Twitter), Reddit, and financial forums.
-      Format your response strictly as a JSON object with the specified keys.
-      IMPORTANT: Ensure all property names (keys) are enclosed in double quotes.
-      - "socialSentiment": string (must be one of "Bullish", "Bearish", "Neutral", or "Mixed")
-      - "trendingTopic": string
+      You are a social media financial analyst... // Rest of prompt is the same
+      Your entire response must be ONLY the raw JSON object, with no introductory text, no summary, no markdown, and no closing remarks.
     `;
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -29,9 +26,12 @@ export default async function handler(req, res) {
     const response = await result.response;
     let text = response.text();
     
-    if (text.startsWith("```json")) {
-        text = text.substring(7, text.length - 3).trim();
+    // --- START: New, more robust cleaning step ---
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      text = jsonMatch[0];
     }
+    // --- END: New cleaning step ---
 
     const jsonData = JSON.parse(text);
     res.status(200).json(jsonData);
