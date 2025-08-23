@@ -4,13 +4,12 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export default async function handler(req, res) {
-  // CORS Headers
+  // CORS Headers... (same as before)
   res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', 'https://clapmoneytrading.com'); // TYPO FIXED HERE
+  res.setHeader('Access-Control-Allow-Origin', 'https://clapmoneytrading.com');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
-  // ... rest of the file is the same
   if (req.method !== 'POST') { return res.status(405).json({ error: "Method Not Allowed" }); }
 
   try {
@@ -18,7 +17,12 @@ export default async function handler(req, res) {
     if (!stockSymbol) { return res.status(400).json({ error: "Stock symbol is required." }); }
 
     const prompt = `
-      You are a quantitative financial analyst... // Rest of prompt
+      You are a quantitative financial analyst. Analyze recent professional analyst reports for the Indian stock with the ticker symbol: ${stockSymbol}.
+      Format your response strictly as a JSON object with the specified keys.
+      IMPORTANT: Ensure all property names (keys) are enclosed in double quotes.
+      - "analystConsensus": string (must be one of "Strong Buy", "Buy", "Hold", "Sell", or "Strong Sell")
+      - "averagePriceTarget": string
+      - "summary": string
     `;
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
