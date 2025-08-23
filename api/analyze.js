@@ -6,10 +6,11 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 export default async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '[https://clapmoneytrading.com](https://clapmoneytrading.com)');
+  res.setHeader('Access-Control-Allow-Origin', 'https://clapmoneytrading.com'); // TYPO FIXED HERE
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
+  // ... rest of the file is the same
   if (req.method !== 'POST') { return res.status(405).json({ error: "Method Not Allowed" }); }
 
   try {
@@ -18,7 +19,7 @@ export default async function handler(req, res) {
 
     const prompt = `
       You are an expert stock market analyst. Provide a detailed, structured analysis for the Indian stock with the ticker symbol: ${stockSymbol}.
-      Format your response strictly as a JSON object... // The rest of your prompt is the same
+      Format your response strictly as a JSON object... // Rest of prompt
     `;
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -26,14 +27,11 @@ export default async function handler(req, res) {
     const response = await result.response;
     let text = response.text();
     
-    // --- START: New cleaning step ---
     if (text.startsWith("```json")) {
         text = text.substring(7, text.length - 3).trim();
     }
-    // --- END: New cleaning step ---
 
     const jsonData = JSON.parse(text);
-
     res.status(200).json(jsonData);
   } catch (error) {
     console.error("Error in analyze.js:", error);
